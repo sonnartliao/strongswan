@@ -296,6 +296,7 @@ ipsec_sa_t *ipsec_sa_create(uint32_t spi, host_t *src, host_t *dst,
 		uint16_t ipcomp, uint16_t cpi, bool encap, bool esn, bool inbound)
 {
 	private_ipsec_sa_t *this;
+	DBG2(DBG_ESP,"create a IPSec SA");
 
 	if (protocol != IPPROTO_ESP)
 	{

@@ -778,6 +778,7 @@ static void host2xfrm(host_t *host, xfrm_address_t *xfrm)
 {
 	chunk_t chunk = host->get_address(host);
 	memcpy(xfrm, chunk.ptr, min(chunk.len, sizeof(xfrm_address_t)));
+	DBG3(DBG_KNL, "host to xfrm");
 }
 
 /**
@@ -787,6 +788,7 @@ static host_t* xfrm2host(int family, xfrm_address_t *xfrm, uint16_t port)
 {
 	chunk_t chunk;
 
+	DBG3(DBG_KNL, "xfrm to host");
 	switch (family)
 	{
 		case AF_INET:
@@ -1662,6 +1664,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	ipsec_mode_t mode = data->mode, original_mode = data->mode;
 	traffic_selector_t *first_src_ts, *first_dst_ts;
 	status_t status = FAILED;
+
+	DBG3(DBG_KNL,"netlink add SA");
 
 	/* if IPComp is used, we install an additional IPComp SA. if the cpi is 0
 	 * we are in the recursive call below */

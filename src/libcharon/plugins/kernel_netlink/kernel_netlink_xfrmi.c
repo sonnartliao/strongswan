@@ -56,6 +56,8 @@ static bool interface_up(private_kernel_netlink_xfrmi_t *this, char *name)
 	struct nlmsghdr *hdr;
 	struct ifinfomsg *msg;
 
+	DBG2(DBG_KNL, "netlink interface up xfrmi");
+
 	memset(&request, 0, sizeof(request));
 
 	hdr = &request.hdr;
@@ -88,6 +90,8 @@ METHOD(kernel_netlink_xfrmi_t, create, bool,
 	struct ifinfomsg *msg;
 	struct rtattr *linkinfo, *info_data;
 	uint32_t ifindex = 0;
+
+	DBG2(DBG_KNL, "netlink create xfrmi");
 
 	if (phys)
 	{
@@ -237,6 +241,8 @@ METHOD(enumerator_t, enumerate, bool,
 	uint32_t *if_id, *mtu;
 	char **phys;
 
+	DBG2(DBG_KNL, "netlink enumerate xfrmi");
+
 	VA_ARGS_VGET(args, name, if_id, phys, mtu);
 
 	if (!this->current)
@@ -315,6 +321,8 @@ METHOD(kernel_netlink_xfrmi_t, create_enumerator, enumerator_t*,
 	size_t len;
 	interface_enumerator_t *enumerator;
 
+	DBG2(DBG_KNL, "netlink create enumerate xfrmi");
+
 	memset(&request, 0, sizeof(request));
 
 	hdr = &request.hdr;
@@ -360,6 +368,7 @@ METHOD(kernel_netlink_xfrmi_t, delete, bool,
 	struct ifinfomsg *msg;
 	struct rtattr *linkinfo;
 
+	DBG2(DBG_KNL, "netlink delete xfrmi");
 	memset(&request, 0, sizeof(request));
 
 	hdr = &request.hdr;
@@ -399,6 +408,8 @@ void kernel_netlink_xfrmi_destroy(kernel_netlink_xfrmi_t *pub)
 {
 	private_kernel_netlink_xfrmi_t *this = (private_kernel_netlink_xfrmi_t*)pub;
 
+	DBG2(DBG_KNL, "netlink destroy xfrmi");
+
 	this->socket->destroy(this->socket);
 	free(this);
 }
@@ -411,6 +422,8 @@ kernel_netlink_xfrmi_t *kernel_netlink_xfrmi_create(bool test)
 	private_kernel_netlink_xfrmi_t *this;
 	char name[IFNAMSIZ] = {};
 	uint32_t if_id;
+
+	DBG2(DBG_KNL,"netlink xfrmi created");
 
 	INIT(this,
 		.public = {

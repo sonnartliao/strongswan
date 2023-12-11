@@ -408,7 +408,7 @@ static eap_payload_t* client_process_eap(private_eap_authenticator_t *this,
 		}
 		else
 		{
-			DBG1(DBG_IKE, "server requested %N authentication (id 0x%02X)",
+			DBG1(DBG_IKE, "eap server requested %N authentication (id 0x%02X)",
 				 eap_type_names, type, in->get_identifier(in));
 		}
 		auth = this->ike_sa->get_auth_cfg(this->ike_sa, TRUE);

@@ -84,7 +84,7 @@ CALLBACK(send_esp, job_requeue_t,
 	data = packet->get_data(packet);
 	source = packet->get_source(packet);
 	destination = packet->get_destination(packet);
-	DBG2(DBG_NET, "sending raw ESP packet: from %H to %H (%zu data bytes)",
+	DBG2(DBG_NET, "kernel sending raw ESP packet: from %H to %H (%zu data bytes)",
 		 source, destination, data.len);
 
 	/* the port of the destination address acts as protocol selector for RAW
@@ -272,6 +272,7 @@ static int create_socket(int family)
 		DBG1(DBG_KNL, "opening RAW socket for ESP failed: %s", strerror(errno));
 		return -1;
 	}
+	DBG2(DBG_ESP ,"create ESP socket");
 	if (setsockopt(skt, family == AF_INET ? IPPROTO_IP : IPPROTO_IPV6,
 				   family == AF_INET ? IP_PKTINFO : IPV6_RECVPKTINFO,
 				   &on, sizeof(on)) == -1)

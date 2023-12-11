@@ -1742,7 +1742,7 @@ static status_t generate_message(private_message_t *this, keymat_t *keymat,
 
 #if DEBUG_LEVEL >= 1
 	char str[BUF_LEN];
-	DBG1(DBG_ENC, "generating %s", get_string(this, str, sizeof(str)));
+	DBG1(DBG_ENC, "encoding generating %s", get_string(this, str, sizeof(str)));
 #endif
 
 	if (keymat)

@@ -147,6 +147,7 @@ static bool create_ike_aead(private_keymat_v2_t *this, uint16_t alg,
 	{
 		return FALSE;
 	}
+	DBG2(DBG_IKE, "create IKE AEAD");
 	return TRUE;
 }
 
@@ -203,6 +204,7 @@ static bool create_ike_traditional(private_keymat_v2_t *this, uint16_t enc_alg,
 	signer_i = signer_o = NULL;
 	crypter_i = crypter_o = NULL;
 
+	DBG2(DBG_IKE, "create IKE tradional");
 failure:
 	DESTROY_IF(signer_i);
 	DESTROY_IF(signer_o);
@@ -664,6 +666,8 @@ METHOD(keymat_v2_t, get_auth_octets, bool,
 	chunk_t chunk, idx;
 	chunk_t skp_ppk = chunk_empty;
 	chunk_t skp;
+
+	DBG2(DBG_IKE, "get auth octests");
 
 	skp = verify ? this->skp_verify : this->skp_build;
 	if (ppk.ptr)

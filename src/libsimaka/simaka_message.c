@@ -254,6 +254,8 @@ METHOD(simaka_message_t, add_attribute, void,
 {
 	attr_t *attr;
 
+	DBG2(DBG_IKE, "EAP-SIM/AKA add attribute %s", simaka_fetch_attribute_name(type));
+
 	attr = malloc(sizeof(attr_t) + data.len);
 	attr->len = data.len;
 	attr->type = type;
@@ -933,3 +935,87 @@ simaka_message_t *simaka_message_create(bool request, uint8_t identifier,
 									  crypto);
 }
 
+const char *simaka_fetch_attribute_name(simaka_attribute_t type)
+{
+	switch (type)
+	{
+	case AT_RAND:
+		return "AT_RAND";
+	case AT_AUTN:
+		return "AT_AUTN";
+	case AT_RES:
+		return "AT_RES";
+	case AT_AUTS:
+		return "AT_AUTS";
+	case AT_PADDING:
+		return "AT_PADDING";
+	case AT_NONCE_MT:
+		return "AT_NONCE_MT";
+	case AT_PERMANENT_ID_REQ:
+		return "AT_PERMANENT_ID_REQ";
+	case AT_MAC:
+		return "AT_MAC";
+	case AT_NOTIFICATION:
+		return "AT_NOTIFICATION";
+	case AT_ANY_ID_REQ:
+		return "AT_ANY_ID_REQ";
+	case AT_IDENTITY:
+		return "AT_IDENTITY";
+	case AT_VERSION_LIST:
+		return "AT_VERSION_LIST";
+	case AT_SELECTED_VERSION:
+		return "AT_SELECTED_VERSION";
+	case AT_FULLAUTH_ID_REQ:
+		return "AT_FULLAUTH_ID_REQ";
+	case AT_COUNTER:
+		return "AT_COUNTER";
+	case AT_COUNTER_TOO_SMALL:
+		return "AT_COUNTER_TOO_SMALL";
+	case AT_NONCE_S:
+		return "AT_NONCE_S";
+	case AT_CLIENT_ERROR_CODE:
+		return "AT_CLIENT_ERROR_CODE";
+	case AT_IV:
+		return "AT_IV";
+	case AT_ENCR_DATA:
+		return "AT_ENCR_DATA";
+	case AT_NEXT_PSEUDONYM:
+		return "AT_NEXT_PSEUDONYM";
+	case AT_NEXT_REAUTH_ID:
+		return "AT_NEXT_REAUTH_ID";
+	case AT_CHECKCODE:
+		return "AT_CHECKCODE";
+	case AT_RESULT_IND:
+		return "AT_RESULT_IND";
+	}
+
+	return "Unknown attibute type";
+}
+
+const char *simaka_fetch_sub_message_type(simaka_subtype_t type)
+{
+	switch (type)
+	{
+	case AKA_CHALLENGE:
+		return "AKA_CHALLENGE";
+	case AKA_AUTHENTICATION_REJECT:
+		return "AKA_AUTHENTICATION_REJECT";
+	case AKA_SYNCHRONIZATION_FAILURE:
+		return "AKA_SYNCHRONIZATION_FAILURE";
+	case AKA_IDENTITY:
+		return "AKA_IDENTITY";
+	case SIM_START:
+		return "SIM_START";
+	case SIM_CHALLENGE:
+		return "SIM_CHALLENGE";
+	case AKA_NOTIFICATION:
+		return "SIM/AKA_NOTIFICATION";
+	case AKA_REAUTHENTICATION:
+		return "SIM/AKA_REAUTHENTICATION";
+	case AKA_CLIENT_ERROR:
+		return "SIM/AKA_CLIENT_ERROR";
+	default:
+		break;
+	}
+	return "Unknown submessage type";
+}

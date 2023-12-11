@@ -2363,6 +2363,8 @@ METHOD(kernel_net_t, add_ip, status_t,
 	};
 	iface_entry_t *iface = NULL;
 
+	DBG3(DBG_KNL, "netlink add ip for iface %s", iface_name);
+
 	if (!this->install_virtual_ip)
 	{	/* disabled by config */
 		return SUCCESS;

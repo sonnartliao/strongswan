@@ -556,6 +556,9 @@ METHOD(eap_method_t, process, status_t,
 		}
 		return NEED_MORE;
 	}
+
+	DBG2(DBG_IKE, "process %s ", simaka_fetch_sub_message_type(message->get_subtype(message)));
+
 	switch (message->get_subtype(message))
 	{
 		case AKA_IDENTITY:

@@ -383,7 +383,7 @@ static bool drop_ike_sa_init(private_receiver_t *this, message_t *message)
 	{
 		chunk_t cookie;
 
-		DBG2(DBG_NET, "received packet: from %#H to %#H (%zu bytes)",
+		DBG2(DBG_NET, "network received packet: from %#H to %#H (%zu bytes)",
 			 src, message->get_destination(message),
 			 message->get_packet_data(message).len);
 

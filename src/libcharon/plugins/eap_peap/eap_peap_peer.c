@@ -143,7 +143,7 @@ METHOD(tls_application_t, process, status_t,
 		}
 		else
 		{
-			DBG1(DBG_IKE, "server requested %N authentication (id 0x%02X)",
+			DBG1(DBG_IKE, "peer server requested %N authentication (id 0x%02X)",
 				 eap_type_names, received_type, in->get_identifier(in));
 		}
 		this->ph2_method = charon->eap->create_instance(charon->eap,

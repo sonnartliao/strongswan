@@ -272,4 +272,7 @@ simaka_message_t *simaka_message_create(bool request, uint8_t identifier,
 simaka_message_t *simaka_message_create_from_payload(chunk_t data,
 													 simaka_crypto_t *crypto);
 
+const char *simaka_fetch_attribute_name(simaka_attribute_t type);
+const char *simaka_fetch_sub_message_type(simaka_subtype_t type);
+
 #endif /** SIMAKA_MESSAGE_H_ @}*/

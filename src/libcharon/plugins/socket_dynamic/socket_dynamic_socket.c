@@ -266,7 +266,7 @@ static packet_t *receive_packet(private_socket_dynamic_socket_t *this,
 		return NULL;
 	}
 	source = host_create_from_sockaddr((sockaddr_t*)&src);
-	DBG2(DBG_NET, "received packet: from %#H to %#H", source, dest);
+	DBG2(DBG_NET, "dynamic received packet: from %#H to %#H", source, dest);
 	data = chunk_create(buffer, len);
 
 	packet = packet_create();
@@ -289,7 +289,7 @@ METHOD(socket_t, receiver, status_t,
 	{
 		maxfd = build_fds(this, &fds);
 
-		DBG2(DBG_NET, "waiting for data on sockets");
+		DBG2(DBG_NET, "dynamic waiting for data on sockets");
 		oldstate = thread_cancelability(TRUE);
 		if (select(maxfd, &fds, NULL, NULL, NULL) <= 0)
 		{

@@ -259,7 +259,7 @@ METHOD(socket_t, receiver, status_t,
 		this->port, this->natt, this->port, this->natt,
 	};
 
-	DBG2(DBG_NET, "waiting for data on sockets");
+	DBG2(DBG_NET, "default socket waiting for data on sockets");
 	oldstate = thread_cancelability(TRUE);
 	if (poll(pfd, countof(pfd), -1) <= 0)
 	{
@@ -346,7 +346,7 @@ METHOD(socket_t, receiver, status_t,
 		pkt = packet_create();
 		pkt->set_source(pkt, source);
 		pkt->set_destination(pkt, dest);
-		DBG2(DBG_NET, "received packet: from %#H to %#H", source, dest);
+		DBG2(DBG_NET, "default socket received packet: from %#H to %#H", source, dest);
 		data = chunk_create(buffer, bytes_read);
 		pkt->set_data(pkt, chunk_clone(data));
 	}
@@ -365,6 +365,7 @@ METHOD(socket_t, receiver, status_t,
  */
 static ssize_t send_msg_generic(int skt, struct msghdr *msg)
 {
+	DBG2(DBG_NET, "default socket send message to NETLINK");
 	return sendmsg(skt, msg, 0);
 }
 
@@ -509,7 +510,7 @@ METHOD(socket_t, sender, status_t,
 	dst = packet->get_destination(packet);
 	data = packet->get_data(packet);
 
-	DBG2(DBG_NET, "sending packet: from %#H to %#H", src, dst);
+	DBG2(DBG_NET, "default socket sending packet: from %#H to %#H", src, dst);
 
 	/* send data */
 	sport = src->get_port(src);

@@ -461,11 +461,11 @@ METHOD(generator_t, generate_payload, void,
 
 	for (i = 0; i < rule_count;i++)
 	{
-		if (this->debug)
-		{
-			DBG2(DBG_ENC, "  generating rule %d %N",
-				 i, encoding_type_names, rules[i].type);
-		}
+		// if (this->debug)
+		// {
+		// 	DBG2(DBG_ENC, "  generating rule %d %N",
+		// 		 i, encoding_type_names, rules[i].type);
+		// }
 		switch ((int)rules[i].type)
 		{
 			case U_INT_4:

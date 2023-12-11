@@ -323,6 +323,8 @@ esp_context_t *esp_context_create(int enc_alg, chunk_t enc_key,
 {
 	private_esp_context_t *this;
 
+	DBG2(DBG_ESP,"context created");
+
 	INIT(this,
 		.public = {
 			.get_aead = _get_aead,
