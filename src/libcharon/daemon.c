@@ -60,6 +60,8 @@
 #include <processing/jobs/start_action_job.h>
 #include <threading/mutex.h>
 
+#include <ipc_msg_queue.h>
+
 #ifndef LOG_AUTHPRIV /* not defined on OpenSolaris */
 #define LOG_AUTHPRIV LOG_AUTH
 #endif
@@ -981,12 +983,18 @@ void libcharon_deinit()
 	charon = NULL;
 }
 
+void QueueMessageHandler(QueueInfo *pQueueInfo, QueueMessageHeader *pHeader, uint32_t nTotalLen)
+{
+	println("%s receive (len %d) bytes content:%s", pQueueInfo->pQeueName, pHeader->nPayloadLen, pHeader->payload);
+}
+
 /**
  * Described in header.
  */
 bool libcharon_init()
 {
 	private_daemon_t *this;
+	QueueMessageHeader *pQueueMsg = NULL;
 
 	if (charon)
 	{	/* already initialized, increase refcount */
@@ -994,6 +1002,15 @@ bool libcharon_init()
 		ref_get(&this->ref);
 		return !this->integrity_failed;
 	}
+
+	// message queue initialize
+	msgqueue_initialize(MODULE_STRONGSWAN_IKE_APP, 0, 0, QueueMessageHandler);
+
+	QUEUE_MSG_MALLOC(pQueueMsg, 128);
+
+	strcpy(pQueueMsg->payload, "this is a message from IKE app");
+	msgqueue_send(MODULE_NETCONF_AGENT, pQueueMsg, QUEUE_MSG_LEN(pQueueMsg));
+	QUEUE_MSG_FREE(pQueueMsg);
 
 	this = daemon_create();
 

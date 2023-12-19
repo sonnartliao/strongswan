@@ -153,6 +153,7 @@ AM_CPPFLAGS = \
 	-I${linux_headers} \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libcharon \
+	-I$(top_srcdir)/src/libipcmsgqueue \
 	-DIPSEC_DIR=\"${ipsecdir}\" \
 	-DIPSEC_PIDDIR=\"${piddir}\"
 
@@ -164,7 +165,7 @@ AM_LDFLAGS = \
 
 libcharon_la_LIBADD = \
   $(top_builddir)/src/libstrongswan/libstrongswan.la \
-  -lm $(PTHREADLIB) $(ATOMICLIB) $(DLLIB) $(SOCKLIB)
+  -lm $(PTHREADLIB) $(ATOMICLIB) $(DLLIB) $(SOCKLIB) -L$(top_builddir)/src/libipcmsgqueue -lipcmsgqueue
 
 if USE_WINDOWS
   libcharon_la_LIBADD += -lws2_32

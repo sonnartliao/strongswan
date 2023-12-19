@@ -10,4 +10,5 @@ AM_CPPFLAGS = \
 xfrmi_LDADD = \
 	$(top_builddir)/src/libcharon/plugins/kernel_netlink/libstrongswan-kernel-netlink.la \
 	$(top_builddir)/src/libstrongswan/libstrongswan.la \
-	$(top_builddir)/src/libcharon/libcharon.la
+	$(top_builddir)/src/libcharon/libcharon.la \
+	-L$(top_builddir)/src/libipcmsgqueue -lipcmsgqueue

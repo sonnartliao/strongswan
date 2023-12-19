@@ -15,6 +15,7 @@ AM_CPPFLAGS = \
 charon_LDADD = \
 	$(top_builddir)/src/libstrongswan/libstrongswan.la \
 	$(top_builddir)/src/libcharon/libcharon.la \
-	-lm $(PTHREADLIB) $(ATOMICLIB) $(DLLIB)
+	-lm $(PTHREADLIB) $(ATOMICLIB) $(DLLIB) \
+	-L$(top_builddir)/src/libipcmsgqueue -lipcmsgqueue
 
 EXTRA_DIST = Android.mk
