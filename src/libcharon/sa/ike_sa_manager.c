@@ -112,6 +112,8 @@ struct entry_t {
 	uint32_t processing;
 };
 
+IKEv2Context gIKEv2Context;
+
 /**
  * Implementation of entry_t.destroy.
  */

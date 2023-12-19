@@ -10,7 +10,9 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libcharon \
 	-DIPSEC_DIR=\"${ipsecdir}\" \
 	-DIPSEC_PIDDIR=\"${piddir}\" \
-	-DPLUGINS=\""${charon_plugins}\""
+	-DPLUGINS=\""${charon_plugins}\"" \
+	-I$(top_srcdir)/src/libipcmsgqueue
+	
 
 charon_LDADD = \
 	$(top_builddir)/src/libstrongswan/libstrongswan.la \

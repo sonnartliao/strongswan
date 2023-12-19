@@ -31,6 +31,17 @@ typedef struct ike_sa_manager_t ike_sa_manager_t;
 #include <encoding/message.h>
 #include <config/peer_cfg.h>
 
+#include <ipc_msg_queue.h>
+
+typedef struct IKEv2Context
+{
+	IKEv2SaSpi spis;
+	IKEv2SaAlgs algs;
+	IKEv2SaKeys keys;
+} IKEv2Context;
+
+extern IKEv2Context gIKEv2Context;
+
 /**
  * Callback called to generate an IKE SPI.
  *
@@ -48,7 +59,8 @@ typedef uint64_t (*spi_cb_t)(void *data);
  * use and checked in afterwards. A checked out SA is exclusively accessible
  * by the owning thread.
  */
-struct ike_sa_manager_t {
+struct ike_sa_manager_t
+{
 
 	/**
 	 * Create a new IKE_SA.
@@ -57,7 +69,7 @@ struct ike_sa_manager_t {
 	 * @param initiator			TRUE for initiator, FALSE otherwise
 	 * @returns 				created IKE_SA (not registered/checked out)
 	 */
-	ike_sa_t *(*create_new)(ike_sa_manager_t* this, ike_version_t version,
+	ike_sa_t *(*create_new)(ike_sa_manager_t *this, ike_version_t version,
 							bool initiator);
 
 	/**
@@ -74,7 +86,7 @@ struct ike_sa_manager_t {
 	 *
 	 * @param ike_sa			IKE_SA to register
 	 */
-	void (*checkout_new)(ike_sa_manager_t* this, ike_sa_t *ike_sa);
+	void (*checkout_new)(ike_sa_manager_t *this, ike_sa_t *ike_sa);
 
 	/**
 	 * Checkout an existing IKE_SA.
@@ -84,7 +96,7 @@ struct ike_sa_manager_t {
 	 * 							- checked out IKE_SA if found
 	 * 							- NULL, if specified IKE_SA is not found.
 	 */
-	ike_sa_t* (*checkout) (ike_sa_manager_t* this, ike_sa_id_t *sa_id);
+	ike_sa_t *(*checkout)(ike_sa_manager_t *this, ike_sa_id_t *sa_id);
 
 	/**
 	 * Track an initial IKE message as responder by increasing the number of
@@ -120,7 +132,7 @@ struct ike_sa_manager_t {
 	 * 							- checked out/created IKE_SA
 	 * 							- NULL to not process message further
 	 */
-	ike_sa_t* (*checkout_by_message) (ike_sa_manager_t* this, message_t *message);
+	ike_sa_t *(*checkout_by_message)(ike_sa_manager_t *this, message_t *message);
 
 	/**
 	 * Checkout an IKE_SA for initiation by a peer_config.
@@ -138,7 +150,7 @@ struct ike_sa_manager_t {
 	 * @param peer_cfg			configuration used to find an existing IKE_SA
 	 * @return					checked out/created IKE_SA
 	 */
-	ike_sa_t *(*checkout_by_config)(ike_sa_manager_t* this, peer_cfg_t *peer_cfg);
+	ike_sa_t *(*checkout_by_config)(ike_sa_manager_t *this, peer_cfg_t *peer_cfg);
 
 	/**
 	 * Reset initiator SPI.
@@ -149,7 +161,7 @@ struct ike_sa_manager_t {
 	 * @param ike_sa			IKE_SA to update
 	 * @return					TRUE if SPI successfully changed
 	 */
-	bool (*new_initiator_spi)(ike_sa_manager_t* this, ike_sa_t *ike_sa);
+	bool (*new_initiator_spi)(ike_sa_manager_t *this, ike_sa_t *ike_sa);
 
 	/**
 	 * Check for duplicates of the given IKE_SA.
@@ -190,7 +202,7 @@ struct ike_sa_manager_t {
 	 * 							- checked out IKE_SA, if found
 	 * 							- NULL, if not found
 	 */
-	ike_sa_t* (*checkout_by_id) (ike_sa_manager_t* this, uint32_t id);
+	ike_sa_t *(*checkout_by_id)(ike_sa_manager_t *this, uint32_t id);
 
 	/**
 	 * Check out an IKE_SA by the policy/connection name.
@@ -204,8 +216,8 @@ struct ike_sa_manager_t {
 	 * 							- checked out IKE_SA, if found
 	 * 							- NULL, if not found
 	 */
-	ike_sa_t* (*checkout_by_name) (ike_sa_manager_t* this, char *name,
-								   bool child);
+	ike_sa_t *(*checkout_by_name)(ike_sa_manager_t *this, char *name,
+								  bool child);
 
 	/**
 	 * Create an enumerator over all stored IKE_SAs.
@@ -216,7 +228,7 @@ struct ike_sa_manager_t {
 	 * @param wait				TRUE to wait for checked out SAs, FALSE to skip
 	 * @return					enumerator over all IKE_SAs.
 	 */
-	enumerator_t *(*create_enumerator) (ike_sa_manager_t* this, bool wait);
+	enumerator_t *(*create_enumerator)(ike_sa_manager_t *this, bool wait);
 
 	/**
 	 * Create an enumerator over ike_sa_id_t*, matching peer identities.
@@ -228,9 +240,9 @@ struct ike_sa_manager_t {
 	 * @param family			address family to match, 0 for any
 	 * @return					enumerator over ike_sa_id_t*
 	 */
-	enumerator_t* (*create_id_enumerator)(ike_sa_manager_t *this,
-								identification_t *me, identification_t *other,
-								int family);
+	enumerator_t *(*create_id_enumerator)(ike_sa_manager_t *this,
+										  identification_t *me, identification_t *other,
+										  int family);
 
 	/**
 	 * Checkin the SA after usage.
@@ -240,7 +252,7 @@ struct ike_sa_manager_t {
 	 * @param ike_sa_id			the SA identifier, will be updated
 	 * @param ike_sa			checked out SA
 	 */
-	void (*checkin) (ike_sa_manager_t* this, ike_sa_t *ike_sa);
+	void (*checkin)(ike_sa_manager_t *this, ike_sa_t *ike_sa);
 
 	/**
 	 * Destroy a checked out SA.
@@ -254,7 +266,7 @@ struct ike_sa_manager_t {
 	 *
 	 * @param ike_sa			SA to delete
 	 */
-	void (*checkin_and_destroy) (ike_sa_manager_t* this, ike_sa_t *ike_sa);
+	void (*checkin_and_destroy)(ike_sa_manager_t *this, ike_sa_t *ike_sa);
 
 	/**
 	 * Get the number of IKE_SAs currently registered.
@@ -302,7 +314,7 @@ struct ike_sa_manager_t {
 	 *
 	 * A call to flush() is required before calling destroy.
 	 */
-	void (*destroy) (ike_sa_manager_t *this);
+	void (*destroy)(ike_sa_manager_t *this);
 };
 
 /**

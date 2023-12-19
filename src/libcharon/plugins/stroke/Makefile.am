@@ -2,6 +2,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libcharon/plugins/counters \
 	-I$(top_srcdir)/src/libcharon \
+	-I$(top_srcdir)/src/libipcmsgqueue \
 	-I$(top_srcdir)/src/stroke \
 	-DIPSEC_CONFDIR=\"${sysconfdir}\" \
 	-DIPSEC_PIDDIR=\"${piddir}\"

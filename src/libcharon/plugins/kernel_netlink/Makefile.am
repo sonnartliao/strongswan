@@ -2,6 +2,7 @@ AM_CPPFLAGS = \
 	-I${linux_headers} \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libcharon \
+	-I$(top_srcdir)/src/libipcmsgqueue \
 	-DROUTING_TABLE=${routing_table} \
 	-DROUTING_TABLE_PRIO=${routing_table_prio}
 

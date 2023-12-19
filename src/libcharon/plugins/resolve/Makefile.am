@@ -1,7 +1,8 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libcharon \
-	-DRESOLV_CONF=\"${resolv_conf}\"
+	-DRESOLV_CONF=\"${resolv_conf}\" \
+	-I$(top_srcdir)/src/libipcmsgqueue
 
 AM_CFLAGS = \
 	$(PLUGIN_CFLAGS)

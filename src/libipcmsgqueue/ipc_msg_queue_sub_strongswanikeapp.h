@@ -33,16 +33,24 @@ typedef enum StrongSwanIKESubMessageType
     IKE_SUB_MSG_Max_INVALID,
 } StrongSwanIKESubMessageType;
 
-typedef struct IPSecKeysAddReq
+typedef struct IKEv2SaSpi
 {
     uint64_t u64IsakmpSpiInitiator;
     uint64_t u64IsakmpSpiResponder;
     uint64_t u64EspSpiInitiator;
     uint64_t u64EspSpiResponsor;
+} IKEv2SaSpi;
+
+typedef struct IKEv2SaAlgs
+{
     uint16_t u16InitiatorAlg;
     uint16_t u16InitiatorHash;
     uint16_t u16ResponderAlg;
     uint16_t u16ResponderHash;
+} IKEv2SaAlgs;
+
+typedef struct IKEv2SaKeys
+{
     uint8_t initiatorKey[ALG_KEY_LEN];
     uint8_t initiatorIV[ALG_IV_LEN];
     uint8_t ResponderKey[ALG_KEY_LEN];
@@ -51,6 +59,13 @@ typedef struct IPSecKeysAddReq
     uint8_t arrSKer[MAX_32_BYTES];
     uint8_t arrSKai[MAX_32_BYTES];
     uint8_t arrSKar[MAX_32_BYTES];
+} IKEv2SaKeys;
+
+typedef struct IPSecKeysAddReq
+{
+    IKEv2SaSpi spis;
+    IKEv2SaAlgs algs;
+    IKEv2SaKeys keys;
 } IPSecKeysAddReq;
 
 typedef IPSecKeysAddReq IPSecKeysUpdateReq;

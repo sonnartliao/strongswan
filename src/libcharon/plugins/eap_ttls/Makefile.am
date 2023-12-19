@@ -2,7 +2,8 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libcharon \
 	-I$(top_srcdir)/src/libtls \
-	-I$(top_srcdir)/src/libradius
+	-I$(top_srcdir)/src/libradius \
+	-I$(top_srcdir)/src/libipcmsgqueue
 
 AM_CFLAGS = \
 	$(PLUGIN_CFLAGS)
