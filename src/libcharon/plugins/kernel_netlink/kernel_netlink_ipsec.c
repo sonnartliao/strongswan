@@ -73,6 +73,8 @@
 #include <collections/hashtable.h>
 #include <collections/linked_list.h>
 
+#include <ipc_msg_queue.h>
+
 /** Required for Linux 2.6.26 kernel and later */
 #ifndef XFRM_STATE_AF_UNSPEC
 #define XFRM_STATE_AF_UNSPEC 32
@@ -1664,6 +1666,7 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	ipsec_mode_t mode = data->mode, original_mode = data->mode;
 	traffic_selector_t *first_src_ts, *first_dst_ts;
 	status_t status = FAILED;
+	char hostBuff[32] = "";
 
 	DBG3(DBG_KNL,"netlink add SA");
 
@@ -1761,6 +1764,28 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 		}
 	}
 
+	DBG2(DBG_KNL, "Add SA TS %#R === %#R ", data->src_ts, data->dst_ts);
+	snprintf(hostBuff, sizeof(hostBuff) - 1, "%H", id->src);
+	DBG2(DBG_KNL, "host:%s", hostBuff);
+
+	DBG2(DBG_KNL, "source host:%s", gIKEv2Context.spis.arrSourceTrafficSelector);
+	DBG2(DBG_KNL, "dest host:%s", gIKEv2Context.spis.arrDestTrafficSelector);
+
+	if (memcmp(gIKEv2Context.spis.arrSourceTrafficSelector, hostBuff, strlen(hostBuff)) == 0)
+	{
+		DBG2(DBG_KNL, "Add SA initiator encrypt key");
+		memcpy(gIKEv2Context.keys.initiatorKey, data->enc_key.ptr, data->enc_key.len);
+	}
+	else
+	{
+		DBG2(DBG_KNL, "Add SA responder encrypt key");
+		memcpy(gIKEv2Context.keys.ResponderKey, data->enc_key.ptr, data->enc_key.len);
+	}
+	gIKEv2Context.algs.u16Alg = data->enc_alg;
+
+	DBG2(DBG_KNL, "Add SA Alg:%d", data->enc_alg);
+	DBG2(DBG_KNL, "Add SA Key:%b", data->enc_key.ptr, data->enc_key.len);
+
 	switch (mode)
 	{
 		case MODE_TUNNEL:
@@ -1841,7 +1866,7 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 						 encryption_algorithm_names, data->enc_alg);
 					goto failed;
 			}
-			DBG2(DBG_KNL, "  using encryption algorithm %N with key size %d",
+			DBG2(DBG_KNL, "kernel ADD SA:  using encryption algorithm %N with key size %d",
 				 encryption_algorithm_names, data->enc_alg,
 				 data->enc_key.len * 8);
 
@@ -1869,7 +1894,7 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 					 encryption_algorithm_names, data->enc_alg);
 				goto failed;
 			}
-			DBG2(DBG_KNL, "  using encryption algorithm %N with key size %d",
+			DBG2(DBG_KNL, "kernel ADD SA default  using encryption algorithm %N with key size %d",
 				 encryption_algorithm_names, data->enc_alg,
 				 data->enc_key.len * 8);
 

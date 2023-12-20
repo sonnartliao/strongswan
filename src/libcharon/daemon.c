@@ -994,7 +994,7 @@ void QueueMessageHandler(QueueInfo *pQueueInfo, QueueMessageHeader *pHeader, uin
 bool libcharon_init()
 {
 	private_daemon_t *this;
-	QueueMessageHeader *pQueueMsg = NULL;
+	// QueueMessageHeader *pQueueMsg = NULL;
 
 	if (charon)
 	{	/* already initialized, increase refcount */
@@ -1006,11 +1006,11 @@ bool libcharon_init()
 	// message queue initialize
 	msgqueue_initialize(MODULE_STRONGSWAN_IKE_APP, 0, 0, QueueMessageHandler);
 
-	QUEUE_MSG_MALLOC(pQueueMsg, 128);
+	// QUEUE_MSG_MALLOC(pQueueMsg, 128);
 
-	strcpy(pQueueMsg->payload, "this is a message from IKE app");
-	msgqueue_send(MODULE_NETCONF_AGENT, pQueueMsg, QUEUE_MSG_LEN(pQueueMsg));
-	QUEUE_MSG_FREE(pQueueMsg);
+	// strcpy(pQueueMsg->payload, "this is a message from IKE app");
+	// msgqueue_send(MODULE_NETCONF_AGENT, pQueueMsg, QUEUE_MSG_LEN(pQueueMsg));
+	// QUEUE_MSG_FREE(pQueueMsg);
 
 	this = daemon_create();
 

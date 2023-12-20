@@ -32,7 +32,7 @@ typedef struct ike_sa_manager_t ike_sa_manager_t;
 #include <config/peer_cfg.h>
 
 #include <ipc_msg_queue.h>
-
+#define IPSEC_FLAG "[IPSEC CONTEXT] "
 typedef struct IKEv2Context
 {
 	IKEv2SaSpi spis;

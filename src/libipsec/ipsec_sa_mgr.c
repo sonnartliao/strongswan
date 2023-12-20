@@ -513,10 +513,13 @@ METHOD(ipsec_sa_mgr_t, add_sa, status_t,
 
 	DBG2(DBG_ESP, "adding SAD entry with SPI %.8x and reqid {%u}",
 		 ntohl(spi), reqid);
-	DBG2(DBG_ESP, "  using encryption algorithm %N with key size %d",
+	DBG2(DBG_ESP, "IPSec ADD SA  using encryption algorithm %N with key size %d",
 		 encryption_algorithm_names, enc_alg, enc_key.len * 8);
 	DBG2(DBG_ESP, "  using integrity algorithm %N with key size %d",
 		 integrity_algorithm_names, int_alg, int_key.len * 8);
+
+	DBG2(DBG_ESP, "Alg:%d", enc_alg);
+	DBG2(DBG_ESP, "Key:%B", enc_key.ptr);
 
 	sa_new = ipsec_sa_create(spi, src, dst, protocol, reqid, mark, tfc,
 							 lifetime, enc_alg, enc_key, int_alg, int_key, mode,

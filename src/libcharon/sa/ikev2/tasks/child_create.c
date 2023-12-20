@@ -15,7 +15,7 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  */
-
+#include <stdio.h>
 #include "child_create.h"
 
 #include <daemon.h>
@@ -31,6 +31,7 @@
 #include <processing/jobs/delete_ike_sa_job.h>
 #include <processing/jobs/inactivity_job.h>
 #include <processing/jobs/initiate_tasks_job.h>
+#include <ipc_msg_queue.h>
 
 typedef struct private_child_create_t private_child_create_t;
 
@@ -501,6 +502,7 @@ static status_t select_and_install(private_child_create_t *this,
 	linked_list_t *my_ts, *other_ts;
 	host_t *me, *other;
 	proposal_selection_flag_t flags = 0;
+	QueueMessageHeader *pQueueMsg = NULL;
 
 	if (this->proposals == NULL)
 	{
@@ -775,8 +777,42 @@ static status_t select_and_install(private_child_create_t *this,
 		return status;
 	}
 
-	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator,
-							this->dh, nonce_i, nonce_r);
+	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator, this->dh, nonce_i, nonce_r);
+
+	gIKEv2Context.spis.u64EspSpiInitiator = ntohl(this->child_sa->get_spi(this->child_sa, FALSE));
+	gIKEv2Context.spis.u64EspSpiResponder = ntohl(this->child_sa->get_spi(this->child_sa, TRUE));
+
+	DBG0(DBG_IKE, IPSEC_FLAG "SPI:%.8x === SPI:%.8x ;TS %s === %s",
+		 gIKEv2Context.spis.u64EspSpiInitiator,
+		 gIKEv2Context.spis.u64EspSpiResponder,
+		 gIKEv2Context.spis.arrSourceTrafficSelector,
+		 gIKEv2Context.spis.arrDestTrafficSelector);
+
+	QUEUE_MSG_MALLOC(pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
+
+	if (pQueueMsg != NULL)
+	{
+		pQueueMsg->eMsgType = MESSAGE_STRONGSWAN_IKE_APP;
+		pQueueMsg->eSubMsgType = IKE_SUB_MSG_IPSEC_KEYS_ADD_UPDATE_REQ;
+		IPSecKeysAddUpdateReq *pPayload = (IPSecKeysAddUpdateReq *)pQueueMsg->payload;
+		memcpy(&pPayload->spis, &gIKEv2Context.spis, MAX_IPSEC_IKE_SPI_SIZE);
+		memcpy(&pPayload->algs, &gIKEv2Context.algs, MAX_IPSEC_IKE_ALGS_SIZE);
+		memcpy(&pPayload->keys, &gIKEv2Context.keys, MAX_IPSEC_IKE_KEYS_SIZE);
+
+		DBG0(DBG_IKE, "INITIATOR ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiInitiator);
+		DBG0(DBG_IKE, "INITIATOR ESP SPI:0x%.08x", pPayload->spis.u64EspSpiInitiator);
+		DBG0(DBG_IKE, "INITIATOR TS:%s", pPayload->spis.arrSourceTrafficSelector);
+		DBG0(DBG_IKE, "INITIATOR KEY :%b", pPayload->keys.initiatorKey, ALG_KEY_LEN);
+
+		DBG0(DBG_IKE, "RESPONDER ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiResponder);
+		DBG0(DBG_IKE, "RESPONDER ESP SPI:0x%.08x", pPayload->spis.u64EspSpiResponder);
+		DBG0(DBG_IKE, "RESPONDER TS:%s", pPayload->spis.arrDestTrafficSelector);
+		DBG0(DBG_IKE, "RESPONDER KEY :%b", pPayload->keys.ResponderKey, ALG_KEY_LEN);
+
+		msgqueue_send(MODULE_DU_APP, pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
+
+		QUEUE_MSG_FREE(pQueueMsg);
+	}
 
 #if DEBUG_LEVEL >= 0
 	child_sa_outbound_state_t out_state;

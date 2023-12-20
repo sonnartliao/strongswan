@@ -431,6 +431,10 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	{
 		goto failure;
 	}
+	memcpy(gIKEv2Context.keys.arrSKei, sk_ei.ptr, sk_ei.len);
+	memcpy(gIKEv2Context.keys.arrSKer, sk_er.ptr, sk_er.len);
+	memcpy(gIKEv2Context.keys.arrSKai, sk_ai.ptr, sk_ai.len);
+	memcpy(gIKEv2Context.keys.arrSKar, sk_ar.ptr, sk_ar.len);
 	/* SK_pi/SK_pr used for authentication => stored for later */
 	DBG4(DBG_IKE, "Sk_pi secret %B", &sk_pi);
 	DBG4(DBG_IKE, "Sk_pr secret %B", &sk_pr);

@@ -21,11 +21,8 @@ typedef enum StrongSwanIKESubMessageType
 {
     IKE_SUB_MSG_MIN_INVALID,
 
-    IKE_SUB_MSG_IPSEC_KEYS_ADD_REQ,
-    IKE_SUB_MSG_IPSEC_KEYS_ADD_RSP,
-
-    IKE_SUB_MSG_IPSEC_KEYS_UPDATE_REQ,
-    IKE_SUB_MSG_IPSEC_KEYS_UPDATE_RSP,
+    IKE_SUB_MSG_IPSEC_KEYS_ADD_UPDATE_REQ,
+    IKE_SUB_MSG_IPSEC_KEYS_ADD_UPDATE_RSP,
 
     IKE_SUB_MSG_IPSEC_KEYS_DEL_REQ,
     IKE_SUB_MSG_IPSEC_KEYS_DEL_RSP,
@@ -38,15 +35,18 @@ typedef struct IKEv2SaSpi
     uint64_t u64IsakmpSpiInitiator;
     uint64_t u64IsakmpSpiResponder;
     uint64_t u64EspSpiInitiator;
-    uint64_t u64EspSpiResponsor;
+    uint64_t u64EspSpiResponder;
+
+    int8_t arrSourceTrafficSelector[MAX_32_BYTES];
+    int8_t arrDestTrafficSelector[MAX_32_BYTES];
 } IKEv2SaSpi;
 
 typedef struct IKEv2SaAlgs
 {
-    uint16_t u16InitiatorAlg;
-    uint16_t u16InitiatorHash;
-    uint16_t u16ResponderAlg;
-    uint16_t u16ResponderHash;
+    uint16_t u16Alg;
+    uint16_t u16Hash;
+    uint16_t u16Resolved1;
+    uint16_t u16Resolved2;
 } IKEv2SaAlgs;
 
 typedef struct IKEv2SaKeys
@@ -61,14 +61,12 @@ typedef struct IKEv2SaKeys
     uint8_t arrSKar[MAX_32_BYTES];
 } IKEv2SaKeys;
 
-typedef struct IPSecKeysAddReq
+typedef struct IPSecKeysAddUpdateReq
 {
     IKEv2SaSpi spis;
     IKEv2SaAlgs algs;
     IKEv2SaKeys keys;
-} IPSecKeysAddReq;
-
-typedef IPSecKeysAddReq IPSecKeysUpdateReq;
+} IPSecKeysAddUpdateReq;
 
 typedef struct IPSecKeysDelReq
 {
@@ -87,17 +85,17 @@ typedef struct IPSecKeysCommonRsp
     uint64_t u64EspSpiResponsor;
 } IPSecKeysCommonRsp;
 
-typedef IPSecKeysCommonRsp IPSecKeysAddRsp;
+typedef IPSecKeysCommonRsp IPSecKeysAddUpdateRsp;
 typedef IPSecKeysCommonRsp IPSecKeysDelRsp;
-typedef IPSecKeysCommonRsp IPSecKeysUpdateRsp;
 
-#define IPSEC_KEYS_ADD_REQ_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysAddReq))
-#define IPSEC_KEYS_ADD_RSP_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysAddRsp))
+#define MAX_IPSEC_IKE_SPI_SIZE sizeof(IKEv2SaSpi)
+#define MAX_IPSEC_IKE_KEYS_SIZE sizeof(IKEv2SaKeys)
+#define MAX_IPSEC_IKE_ALGS_SIZE sizeof(IKEv2SaAlgs)
 
-#define IPSEC_KEYS_DEL_REQ_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysDelReq))
-#define IPSEC_KEYS_DEL_RSP_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysDelRsp))
+#define MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE (sizeof(IPSecKeysAddUpdateReq))
+#define MAX_IPSEC_IKE_ADD_UPDATE_RSP_SIZE (sizeof(IPSecKeysAddUpdateReq))
 
-#define IPSEC_KEYS_UPDATE_REQ_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysUpdateReq))
-#define IPSEC_KEYS_UPDATE_RSP_LEN (QUEUE_MSG_HDR_LEN + sizeof(IPSecKeysUpdateRsp))
+#define MAX_IPSEC_IKE_DEL_REQ_SIZE (sizeof(IPSecKeysDelReq))
+#define MAX_IPSEC_IKE_DEL_RSP_SIZE (sizeof(IPSecKeysDelRsp))
 
 #endif

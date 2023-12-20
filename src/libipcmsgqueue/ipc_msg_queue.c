@@ -4,6 +4,12 @@
 #include "ipc_file_util.h"
 
 // message of queue
+typedef enum CarrierType
+{
+    CARRIER_ANY = 1, // the firt message in message queue ,ignore message type
+    CARRIER_CONTROL, // the first CONTROL message in the message queue
+    CARRIER_DATA     // the first DATA message in the message queue
+} CarrierType;
 typedef struct QueueMessage
 {
     long carrierType;

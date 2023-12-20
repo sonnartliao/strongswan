@@ -17,6 +17,7 @@
 #include "ike_establish.h"
 
 #include <daemon.h>
+#include <ipc_msg_queue.h>
 
 typedef struct private_ike_establish_t private_ike_establish_t;
 
@@ -53,7 +54,8 @@ METHOD(task_t, process_r, status_t,
  */
 static void establish(private_ike_establish_t *this)
 {
-	DBG0(DBG_IKE, "IKE_SA %s[%d] IKEv2 established between %H[%Y]...%H[%Y]",
+	char buff[32] = "";
+	DBG0(DBG_IKE, "IKEv2 IKE_SA %s[%d] IKEv2 established between %H[%Y]...%H[%Y]",
 		 this->ike_sa->get_name(this->ike_sa),
 		 this->ike_sa->get_unique_id(this->ike_sa),
 		 this->ike_sa->get_my_host(this->ike_sa),
@@ -62,6 +64,13 @@ static void establish(private_ike_establish_t *this)
 		 this->ike_sa->get_other_id(this->ike_sa));
 	this->ike_sa->set_state(this->ike_sa, IKE_ESTABLISHED);
 	charon->bus->ike_updown(charon->bus, this->ike_sa, TRUE);
+
+	snprintf(buff, sizeof(buff) - 1, "%H", this->ike_sa->get_my_host(this->ike_sa));
+	strcpy(gIKEv2Context.spis.arrSourceTrafficSelector, buff);
+
+	ZERO_ARRAY(buff);
+	snprintf(buff, sizeof(buff) - 1, "%H", this->ike_sa->get_other_host(this->ike_sa));
+	strcpy(gIKEv2Context.spis.arrDestTrafficSelector, buff);
 }
 
 METHOD(task_t, build_r, status_t,
