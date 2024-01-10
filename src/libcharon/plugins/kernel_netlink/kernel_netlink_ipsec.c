@@ -1764,24 +1764,22 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 		}
 	}
 
-	DBG2(DBG_KNL, "Add SA TS %#R === %#R ", data->src_ts, data->dst_ts);
+	DBG2(DBG_KNL, IPSEC_FLAG "Add SA TS %#R === %#R ", data->src_ts, data->dst_ts);
 	snprintf(hostBuff, sizeof(hostBuff) - 1, "%H", id->src);
-	DBG2(DBG_KNL, "host:%s", hostBuff);
 
-	DBG2(DBG_KNL, "source host:%s", gIKEv2Context.spis.arrSourceTrafficSelector);
-	DBG2(DBG_KNL, "dest host:%s", gIKEv2Context.spis.arrDestTrafficSelector);
-
+	gIKEv2Context.algs.keyLen = data->enc_key.len;
+	gIKEv2Context.algs.ivLen = data->enc_key.len;
+	gIKEv2Context.algs.u16Alg = data->enc_alg;
 	if (memcmp(gIKEv2Context.spis.arrSourceTrafficSelector, hostBuff, strlen(hostBuff)) == 0)
 	{
-		DBG2(DBG_KNL, "Add SA initiator encrypt key");
+		DBG2(DBG_KNL, IPSEC_FLAG "Add SA initiator encrypt key");
 		memcpy(gIKEv2Context.keys.initiatorKey, data->enc_key.ptr, data->enc_key.len);
 	}
 	else
 	{
-		DBG2(DBG_KNL, "Add SA responder encrypt key");
+		DBG2(DBG_KNL, IPSEC_FLAG "Add SA responder encrypt key");
 		memcpy(gIKEv2Context.keys.ResponderKey, data->enc_key.ptr, data->enc_key.len);
 	}
-	gIKEv2Context.algs.u16Alg = data->enc_alg;
 
 	DBG2(DBG_KNL, "Add SA Alg:%d", data->enc_alg);
 	DBG2(DBG_KNL, "Add SA Key:%b", data->enc_key.ptr, data->enc_key.len);

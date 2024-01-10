@@ -1920,14 +1920,22 @@ METHOD(ike_sa_manager_t, checkin, void,
 	host_t *other;
 	identification_t *my_id, *other_id;
 	u_int segment;
+	uint64_t u64IsakmpSpiInitiator, u64IsakmpSpiResponder;
 
 	ike_sa_id = ike_sa->get_id(ike_sa);
 	my_id = ike_sa->get_my_id(ike_sa);
 	other_id = ike_sa->get_other_eap_id(ike_sa);
 	other = ike_sa->get_other_host(ike_sa);
 
-	gIKEv2Context.spis.u64IsakmpSpiInitiator = be64toh(ike_sa_id->get_initiator_spi(ike_sa_id));
-	gIKEv2Context.spis.u64IsakmpSpiResponder = be64toh(ike_sa_id->get_responder_spi(ike_sa_id));
+	u64IsakmpSpiInitiator = be64toh(ike_sa_id->get_initiator_spi(ike_sa_id));
+	u64IsakmpSpiResponder = be64toh(ike_sa_id->get_responder_spi(ike_sa_id));
+
+	DBG2(DBG_MGR, IPSEC_FLAG "update Isakmp SPI from [0x%.16llx === 0x%.16llx] to [0x%.16llx === 0x%.16llx]",
+		 gIKEv2Context.spis.u64IsakmpSpiInitiator, gIKEv2Context.spis.u64IsakmpSpiResponder,
+		 u64IsakmpSpiInitiator, u64IsakmpSpiResponder);
+
+	gIKEv2Context.spis.u64IsakmpSpiInitiator = u64IsakmpSpiInitiator;
+	gIKEv2Context.spis.u64IsakmpSpiResponder = u64IsakmpSpiResponder;
 
 	DBG2(DBG_MGR, IPSEC_FLAG "checkin %N SA %s[%u] with SPIs %.16" PRIx64 "_i %.16" PRIx64 "_r",
 		 ike_version_names,

@@ -1,5 +1,5 @@
-#ifndef _FILE_UTIL_H_
-#define _FILE_UTIL_H_
+#ifndef _IPC_FILE_UTIL_H_
+#define _IPC_FILE_UTIL_H_
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -60,7 +60,7 @@ bool create_file_if_absent(const char *pFullFileName)
 
   for (i = 0; i < nLines - 1; i++)
   {
-    if (strlen(arrPath) + strlen(arrBuffers[1] + 1) >= MAX_PATH_BUFF_LEN)
+    if (strlen(arrPath) + strlen(arrBuffers[i] + 1) >= MAX_PATH_BUFF_LEN)
     {
       println("path is too long %lu", strlen(pFullFileName));
       return false;

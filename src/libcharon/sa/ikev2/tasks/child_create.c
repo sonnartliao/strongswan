@@ -778,10 +778,10 @@ static status_t select_and_install(private_child_create_t *this,
 	}
 
 	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator, this->dh, nonce_i, nonce_r);
+	// this->proposal->
 
 	gIKEv2Context.spis.u64EspSpiInitiator = ntohl(this->child_sa->get_spi(this->child_sa, FALSE));
 	gIKEv2Context.spis.u64EspSpiResponder = ntohl(this->child_sa->get_spi(this->child_sa, TRUE));
-
 	DBG0(DBG_IKE, IPSEC_FLAG "SPI:%.8x === SPI:%.8x ;TS %s === %s",
 		 gIKEv2Context.spis.u64EspSpiInitiator,
 		 gIKEv2Context.spis.u64EspSpiResponder,
@@ -799,17 +799,18 @@ static status_t select_and_install(private_child_create_t *this,
 		memcpy(&pPayload->algs, &gIKEv2Context.algs, MAX_IPSEC_IKE_ALGS_SIZE);
 		memcpy(&pPayload->keys, &gIKEv2Context.keys, MAX_IPSEC_IKE_KEYS_SIZE);
 
-		DBG0(DBG_IKE, "INITIATOR ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiInitiator);
-		DBG0(DBG_IKE, "INITIATOR ESP SPI:0x%.08x", pPayload->spis.u64EspSpiInitiator);
-		DBG0(DBG_IKE, "INITIATOR TS:%s", pPayload->spis.arrSourceTrafficSelector);
-		DBG0(DBG_IKE, "INITIATOR KEY :%b", pPayload->keys.initiatorKey, ALG_KEY_LEN);
+		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiInitiator);
+		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR ESP SPI:0x%.08x", pPayload->spis.u64EspSpiInitiator);
+		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR TS:%s", pPayload->spis.arrSourceTrafficSelector);
+		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR KEY :%b", pPayload->keys.initiatorKey, ALG_KEY_LEN);
 
-		DBG0(DBG_IKE, "RESPONDER ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiResponder);
-		DBG0(DBG_IKE, "RESPONDER ESP SPI:0x%.08x", pPayload->spis.u64EspSpiResponder);
-		DBG0(DBG_IKE, "RESPONDER TS:%s", pPayload->spis.arrDestTrafficSelector);
-		DBG0(DBG_IKE, "RESPONDER KEY :%b", pPayload->keys.ResponderKey, ALG_KEY_LEN);
+		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiResponder);
+		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER ESP SPI:0x%.08x", pPayload->spis.u64EspSpiResponder);
+		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER TS:%s", pPayload->spis.arrDestTrafficSelector);
+		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER KEY :%b", pPayload->keys.ResponderKey, ALG_KEY_LEN);
 
-		msgqueue_send(MODULE_DU_APP, pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
+		DBG0(DBG_IKE, IPSEC_FLAG "send sa and keys to duapp");
+		msgqueue_send(MODULE_DU_APP0, pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
 
 		QUEUE_MSG_FREE(pQueueMsg);
 	}

@@ -436,8 +436,8 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	memcpy(gIKEv2Context.keys.arrSKai, sk_ai.ptr, sk_ai.len);
 	memcpy(gIKEv2Context.keys.arrSKar, sk_ar.ptr, sk_ar.len);
 	/* SK_pi/SK_pr used for authentication => stored for later */
-	DBG4(DBG_IKE, "Sk_pi secret %B", &sk_pi);
-	DBG4(DBG_IKE, "Sk_pr secret %B", &sk_pr);
+	DBG4(DBG_IKE, IPSEC_FLAG "Sk_pi secret %B", &sk_pi);
+	DBG4(DBG_IKE, IPSEC_FLAG "Sk_pr secret %B", &sk_pr);
 	if (this->initiator)
 	{
 		this->skp_build = sk_pi;

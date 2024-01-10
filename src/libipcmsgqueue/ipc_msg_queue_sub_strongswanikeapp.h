@@ -45,8 +45,8 @@ typedef struct IKEv2SaAlgs
 {
     uint16_t u16Alg;
     uint16_t u16Hash;
-    uint16_t u16Resolved1;
-    uint16_t u16Resolved2;
+    uint16_t keyLen;
+    uint16_t ivLen;
 } IKEv2SaAlgs;
 
 typedef struct IKEv2SaKeys

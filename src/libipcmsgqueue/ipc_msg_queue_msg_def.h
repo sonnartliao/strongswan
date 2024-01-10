@@ -10,34 +10,41 @@
 /******************************************************************************************************
  *       service messages definition
  *******************************************************************************************************/
-typedef enum EQueueErrCode
-{
-    QUEUE_CODE_SUCCESS,
-    QUEUE_CODE_FAILD,
-
-    QUEUE_CODE_SA_NOT_EXIST
-
-} EQueueErrCode;
-
 typedef enum ModuleID
 {
     MODULE_MIN_INVALID,
 
     MODULE_OAM,
     MODULE_NETCONF_AGENT,
-    MODULE_CPCELL_APP,
-    MODULE_CPGNB_APP,
-    MODULE_CPUP_PROXY,
-    MODULE_DU_APP,
-
     MODULE_FHO_AGENT,
     MODULE_RU_AGENT,
     MODULE_BBU_GUARD,
-
     MODULE_STRONGSWAN_IKE_APP,
+    MODULE_MONITOR,
+
+    MODULE_CPGNB_APP,
+    MODULE_CPUP_PROXY,
+
+    MODULE_CPCELL_APP0,
+    MODULE_CPCELL_APP1,
+    MODULE_CPCELL_APP2,
+    MODULE_CPCELL_APP3,
+
+    MODULE_DU_APP0,
+    MODULE_DU_APP1,
+    MODULE_DU_APP2,
+    MODULE_DU_APP3,
 
     MODULE_MAX_INVLAID
 } ModuleID;
+
+typedef enum EQueueErrCode
+{
+    QUEUE_CODE_SUCCESS,
+    QUEUE_CODE_FAILD,
+
+    QUEUE_CODE_SA_NOT_EXIST
+} EQueueErrCode;
 
 typedef enum MessageType
 {
