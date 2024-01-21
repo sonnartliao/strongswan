@@ -17,6 +17,7 @@
 #define _GNU_SOURCE
 #include <pthread.h>
 #include <signal.h>
+#include <sys/sysinfo.h>
 
 #ifdef HAVE_GETTID
 #include <sys/types.h>
@@ -39,6 +40,8 @@ static inline pid_t gettid()
 #include <collections/linked_list.h>
 
 #include "thread.h"
+
+#define SELF_THREAD_ID syscall(SYS_gettid)
 
 typedef struct private_thread_t private_thread_t;
 
@@ -90,6 +93,7 @@ struct private_thread_t {
 	 */
 	bool terminated;
 
+	u_int boundCoreId;
 };
 
 typedef struct {
@@ -304,6 +308,27 @@ static void thread_cleanup(private_thread_t *this)
 	thread_destroy(this);
 }
 
+void bind_thread_core(uint8_t nCoreId)
+{
+	cpu_set_t mask;
+	cpu_set_t get;
+
+	CPU_ZERO(&mask);
+	CPU_SET(nCoreId, &mask);
+	if (sched_setaffinity(SELF_THREAD_ID, sizeof(mask), &mask) == -1)
+	{
+		DBG0(DBG_LIB, "warning: could not bind thread %d to core %d", SELF_THREAD_ID, nCoreId);
+		return;
+	}
+
+	CPU_ZERO(&get);
+	if (sched_getaffinity(SELF_THREAD_ID, sizeof(get), &get) == -1)
+	{
+		DBG0(DBG_LIB, "warning: could get thread %d bound core", SELF_THREAD_ID);
+		return;
+	}
+}
+
 /**
  * Main function wrapper for threads.
  *
@@ -316,6 +341,15 @@ static void *thread_main(private_thread_t *this)
 	void *res;
 
 	this->id = get_thread_id();
+
+	if (this->boundCoreId >= 0)
+	{
+		bind_thread_core(this->boundCoreId);
+	}
+	else
+	{
+		DBG0(DBG_LIB, "bind thread %d to core %d failed", SELF_THREAD_ID, this->boundCoreId);
+	}
 
 	current_thread->set(current_thread, this);
 	pthread_cleanup_push((thread_cleanup_t)thread_cleanup, this);
@@ -345,6 +379,7 @@ static void *thread_main(private_thread_t *this)
 thread_t *thread_create(thread_main_t main, void *arg)
 {
 	private_thread_t *this = thread_create_internal();
+	int nCupCount = 0;
 
 	this->main = main;
 	this->arg = arg;
@@ -359,6 +394,17 @@ thread_t *thread_create(thread_main_t main, void *arg)
 		return NULL;
 	}
 
+	nCupCount = get_nprocs_conf();
+	if (nCupCount > 0 && nCupCount < 16)
+	{
+		this->boundCoreId = nCupCount - 1;
+	}
+	else
+	{
+		this->boundCoreId = 0;
+	}
+
+	// for UCP4008
 	return &this->public;
 }
 

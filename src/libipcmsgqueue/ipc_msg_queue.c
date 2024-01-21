@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <sched.h>
 #include <syscall.h>
 #include "ipc_msg_queue.h"
@@ -97,24 +98,27 @@ static bool create_thread(ThreadRoutine fnRoutine, void *param, pthread_t *pTid)
     return true;
 }
 
-static void bind_thread_core(uint8_t nCoreId)
+void msgqueue_bind_thread_core(uint8_t nCoreId)
 {
-    // cpu_set_t mask;
-    // cpu_set_t get;
+    cpu_set_t mask;
+    cpu_set_t get;
 
-    // CPU_ZERO(&mask);
-    // CPU_SET(nCoreId, &mask);
-    // if (sched_setaffinity(0, sizeof(mask), &mask) == -1)
-    // {
-    //     println("warning: could not set CPU affinity, continuing...\n");
-    // }
+    println("binding thread %d to %d", SELF_THREAD_ID, nCoreId);
 
-    // CPU_ZERO(&get);
-    // if (sched_getaffinity(0, sizeof(get), &get) == -1)
-    // {
-    //     println("warning: cound not get thread affinity, continuing...\n");
-    // }
+    CPU_ZERO(&mask);
+    CPU_SET(nCoreId, &mask);
+    if (sched_setaffinity(SELF_THREAD_ID, sizeof(mask), &mask) == -1)
+    {
+        println("warning: could not set CPU affinity, continuing...\n");
+    }
+
+    CPU_ZERO(&get);
+    if (sched_getaffinity(SELF_THREAD_ID, sizeof(get), &get) == -1)
+    {
+        println("warning: cound not get thread affinity, continuing...\n");
+    }
 }
+
 bool msgqueue_initialize(ModuleID eModuleId, uint32_t nInstID, uint32_t nRunningCoreId, QueueMessageProcessor fnHandler)
 {
     CHECK_MSG_QUEUE_MODULEID_RV(eModuleId, false);
@@ -145,6 +149,7 @@ bool msgqueue_initialize(ModuleID eModuleId, uint32_t nInstID, uint32_t nRunning
     gContext.fnDataMsgHandle = fnHandler;
     gContext.nLightId = syscall(SYS_gettid);
     gContext.isInitialized = true;
+    gContext.nBindCoreID = nRunningCoreId;
 
     create_thread(thread_main_routine, &gContext.arrQueueInfo[eModuleId], &gContext.tid);
 
@@ -199,9 +204,15 @@ void *thread_main_routine(void *param)
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 
+    if (gContext.nBindCoreID >= 0)
+    {
+        msgqueue_bind_thread_core(gContext.nBindCoreID);
+    }
+
     gContext.nLightId = syscall(SYS_gettid);
 
-    println("%s message queue receiver running,selfid=%u", pQueueInfo->pQeueName, gContext.nLightId);
+    println("%s message queue receiver running,selfid %u,bound core %d", pQueueInfo->pQeueName,
+            gContext.nLightId, gContext.nBindCoreID);
 
     while (gContext.bRunning)
     {

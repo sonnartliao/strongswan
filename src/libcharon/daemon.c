@@ -994,6 +994,7 @@ void QueueMessageHandler(QueueInfo *pQueueInfo, QueueMessageHeader *pHeader, uin
 bool libcharon_init()
 {
 	private_daemon_t *this;
+	uint8_t nBoundCoreID = CPU_CORES - 1;
 	// QueueMessageHeader *pQueueMsg = NULL;
 
 	if (charon)
@@ -1003,8 +1004,10 @@ bool libcharon_init()
 		return !this->integrity_failed;
 	}
 
+	msgqueue_bind_thread_core(nBoundCoreID);
+
 	// message queue initialize
-	msgqueue_initialize(MODULE_STRONGSWAN_IKE_APP, 0, 0, QueueMessageHandler);
+	msgqueue_initialize(MODULE_STRONGSWAN_IKE_APP, 0, nBoundCoreID, QueueMessageHandler);
 
 	// QUEUE_MSG_MALLOC(pQueueMsg, 128);
 

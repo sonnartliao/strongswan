@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/ipc.h>
+#include <sys/sysinfo.h>
 #include <sys/msg.h>
 #include <string.h>
 #include <stdint.h>
@@ -22,6 +23,9 @@
 #include "ipc_msg_queue_sub_oam.h"
 #include "ipc_msg_queue_sub_ru.h"
 #include "ipc_msg_queue_sub_strongswanikeapp.h"
+
+#define SELF_THREAD_ID syscall(SYS_gettid)
+#define CPU_CORES get_nprocs_conf()
 
 #define MAX_QUEUE_BUFFER_LEN 8192
 #define RET_MSG_QUEUE_FAILED -1
@@ -95,6 +99,8 @@ extern "C"
     const char *msgqueue_fetch_name(ModuleID eModuleId);
     const char *msgqueue_fetch_owner_name();
     ModuleID msgqueue_fetch_owner_module_id();
+
+    void msgqueue_bind_thread_core(uint8_t nCoreId);
 
 #ifdef __cplusplus
 }
