@@ -755,6 +755,7 @@ METHOD(ike_sa_t, set_condition, void,
 					DBG1(DBG_IKE, "local host is behind NAT, sending keep alives");
 					this->conditions |= COND_NAT_ANY;
 					send_keepalive(this, FALSE);
+					gIKEv2Context.local_nat_flag = true;
 					break;
 				case COND_NAT_THERE:
 					DBG1(DBG_IKE, "remote host is behind NAT");

@@ -1767,18 +1767,31 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	DBG2(DBG_KNL, IPSEC_FLAG "Add SA TS %#R === %#R ", data->src_ts, data->dst_ts);
 	snprintf(hostBuff, sizeof(hostBuff) - 1, "%H", id->src);
 
-	gIKEv2Context.algs.keyLen = data->enc_key.len;
-	gIKEv2Context.algs.ivLen = data->enc_key.len;
 	gIKEv2Context.algs.u16Alg = data->enc_alg;
+	gIKEv2Context.algs.keyLen = data->enc_key.len;
+	gIKEv2Context.algs.u16Hash = data->int_alg;
+	gIKEv2Context.algs.icvKeylen = data->int_key.len;
+	//gIKEv2Context.algs.ivLen = data->enc_key.len;  
+	gIKEv2Context.algs.mode = data->mode;
+	gIKEv2Context.algs.proto = id->proto;
+	
+	DBG2(DBG_KNL, IPSEC_FLAG "Add SA info{mode:%hu,proto:%hu}",data->mode,id->proto);
+	
 	if (memcmp(gIKEv2Context.spis.arrSourceTrafficSelector, hostBuff, strlen(hostBuff)) == 0)
 	{
 		DBG2(DBG_KNL, IPSEC_FLAG "Add SA initiator encrypt key");
 		memcpy(gIKEv2Context.keys.initiatorKey, data->enc_key.ptr, data->enc_key.len);
+
+		DBG2(DBG_KNL, IPSEC_FLAG "Add SA initiator icv key");
+		memcpy(gIKEv2Context.keys.initiatorIcvKey, data->int_key.ptr, data->int_key.len);
 	}
 	else
 	{
 		DBG2(DBG_KNL, IPSEC_FLAG "Add SA responder encrypt key");
 		memcpy(gIKEv2Context.keys.ResponderKey, data->enc_key.ptr, data->enc_key.len);
+
+		DBG2(DBG_KNL, IPSEC_FLAG "Add SA responder icv key");
+		memcpy(gIKEv2Context.keys.ResponderIcvKey, data->int_key.ptr, data->int_key.len);
 	}
 
 	DBG2(DBG_KNL, "Add SA Alg:%d", data->enc_alg);
@@ -3068,8 +3081,22 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 		}
 	}
 	policy_change_done(this, policy);
+
+	//
+	QueueMessageHeader *pQueueMsg = NULL;
+	QUEUE_MSG_MALLOC(pQueueMsg,MAX_IPSEC_IKE_SP_FLUSH_REQ_SIZE);
+	if(pQueueMsg != NULL)
+	{
+		pQueueMsg->eMsgType = MESSAGE_STRONGSWAN_IKE_APP;
+		pQueueMsg->eSubMsgType = IKE_SUB_MSG_IPSEC_SP_FLUSH;
+
+		msgqueue_send(MODULE_DU_APP0,pQueueMsg,QUEUE_MSG_HDR_LEN + MAX_IPSEC_IKE_SP_FLUSH_REQ_SIZE);
+		QUEUE_MSG_FREE(pQueueMsg);
+	}
+	
 	return SUCCESS;
 }
+
 
 METHOD(kernel_ipsec_t, add_policy, status_t,
 	private_kernel_netlink_ipsec_t *this, kernel_ipsec_policy_id_t *id,
@@ -3130,6 +3157,45 @@ METHOD(kernel_ipsec_t, add_policy, status_t,
 											   : data->manual_prio;
 	assigned_sa->priority = assigned_sa->priority ?: assigned_sa->auto_priority;
 
+	#if 0
+	//---------send sp to duapp  begin-------------------------------------------------
+	QueueMessageHeader *pQueueMsg = NULL;
+	QUEUE_MSG_MALLOC(pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_SP_SIZE);
+
+	
+	if (pQueueMsg != NULL)
+	{
+		pQueueMsg->eMsgType = MESSAGE_STRONGSWAN_IKE_APP;
+		pQueueMsg->eSubMsgType = IKE_SUB_MSG_IPSEC_SP_ADD_UPDATE_REQ;
+		IPSecSpAddUpdateReq *pPayload = (IPSecSpAddUpdateReq *)pQueueMsg->payload;
+		pPayload->dir = id->dir;
+		pPayload->priority = data->prio;
+		pPayload->spi =assigned_sa->sa->cfg.esp.spi;
+		sprintf(pPayload->src_ts,"%R",id->src_ts);
+		sprintf(pPayload->dst_ts,"%R",id->dst_ts);
+	
+		
+		DBG0(DBG_IKE, IPSEC_FLAG "send sp{dir:%u,priority:%u,spi:%u,src_ts:%s,dst_ts:%s} to duapp",id->dir,data->prio,pPayload->spi,pPayload->src_ts,pPayload->dst_ts);
+		msgqueue_send(MODULE_DU_APP0, pQueueMsg, QUEUE_MSG_HDR_LEN + MAX_IPSEC_IKE_ADD_UPDATE_SP_SIZE);
+		
+
+		QUEUE_MSG_FREE(pQueueMsg);
+	}
+	//---------send sp to duapp  end------------------------------------------------
+	#else
+	if( 0==id->dir || 1==id->dir)
+	{
+		uint8_t index = gIKEv2Context.sps.num;
+		gIKEv2Context.sps.spInfo[index].dir = id->dir;
+		gIKEv2Context.sps.spInfo[index].priority = data->prio;
+		gIKEv2Context.sps.spInfo[index].spi = assigned_sa->sa->cfg.esp.spi;
+		sprintf(gIKEv2Context.sps.spInfo[index].src_ts,"%R",id->src_ts);
+		sprintf(gIKEv2Context.sps.spInfo[index].dst_ts,"%R",id->dst_ts);
+		gIKEv2Context.sps.num++;
+	}
+
+	#endif
+		
 	/* insert the SA according to its priority */
 	enumerator = policy->used_by->create_enumerator(policy->used_by);
 	while (enumerator->enumerate(enumerator, (void**)&current_sa))
@@ -3318,6 +3384,25 @@ METHOD(kernel_ipsec_t, del_policy, status_t,
 	DBG2(DBG_KNL, "deleting policy %R === %R %N%s%s", id->src_ts, id->dst_ts,
 		 policy_dir_names, id->dir, markstr, labelstr);
 
+	//delete sp in gIKEv2Context
+	uint8_t src_ts[MAX_32_BYTES];
+	uint8_t dst_ts[MAX_32_BYTES];
+	sprintf(src_ts,"%R",id->src_ts);
+	sprintf(dst_ts,"%R",id->dst_ts);
+	
+	for(int i=0;i<gIKEv2Context.sps.num;i++)
+	{
+		if(!strcmp(src_ts,gIKEv2Context.sps.spInfo[i].src_ts) && !strcmp(dst_ts,gIKEv2Context.sps.spInfo[i].dst_ts) 
+					&& id->dir == gIKEv2Context.sps.spInfo[i].dir)
+		{
+			IPSecSp* pIPSecSp = &(gIKEv2Context.sps.spInfo[i]);
+			memcpy(pIPSecSp,pIPSecSp+1,(gIKEv2Context.sps.num-i-1)*sizeof(IPSecSp));
+			gIKEv2Context.sps.num--;
+			break;
+		}
+	}
+	
+	
 	/* create a policy */
 	memset(&policy, 0, sizeof(policy_entry_t));
 	policy.sel = ts2selector(id->src_ts, id->dst_ts, id->interface);

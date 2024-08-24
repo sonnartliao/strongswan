@@ -798,7 +798,9 @@ static status_t select_and_install(private_child_create_t *this,
 		memcpy(&pPayload->spis, &gIKEv2Context.spis, MAX_IPSEC_IKE_SPI_SIZE);
 		memcpy(&pPayload->algs, &gIKEv2Context.algs, MAX_IPSEC_IKE_ALGS_SIZE);
 		memcpy(&pPayload->keys, &gIKEv2Context.keys, MAX_IPSEC_IKE_KEYS_SIZE);
-
+		memcpy(&pPayload->sps, &gIKEv2Context.sps, MAX_IPSEC_IKE_SPS_SIZE);
+		pPayload->local_nat_flag = gIKEv2Context.local_nat_flag;
+		
 		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR ISAKMP SPI:0x%llx", pPayload->spis.u64IsakmpSpiInitiator);
 		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR ESP SPI:0x%.08x", pPayload->spis.u64EspSpiInitiator);
 		DBG0(DBG_IKE, IPSEC_FLAG "INITIATOR TS:%s", pPayload->spis.arrSourceTrafficSelector);
@@ -809,8 +811,22 @@ static status_t select_and_install(private_child_create_t *this,
 		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER TS:%s", pPayload->spis.arrDestTrafficSelector);
 		DBG0(DBG_IKE, IPSEC_FLAG "RESPONDER KEY :%b", pPayload->keys.ResponderKey, ALG_KEY_LEN);
 
+		DBG0(DBG_IKE, IPSEC_FLAG "ALGS mode:%hu", pPayload->algs.mode);
+		DBG0(DBG_IKE, IPSEC_FLAG "ALGS proto:%hu", pPayload->algs.proto);
+
+		DBG0(DBG_IKE, IPSEC_FLAG "sps num:%hu", pPayload->sps.num);
+		
+		for(uint8_t i=0;i<pPayload->sps.num;i++)
+		{
+			DBG0(DBG_IKE, IPSEC_FLAG "send sp{dir:%u,priority:%u,spi:%u,src_ts:%s,dst_ts:%s} to duapp",
+				pPayload->sps.spInfo[i].dir,pPayload->sps.spInfo[i].priority,pPayload->sps.spInfo[i].spi,
+				pPayload->sps.spInfo[i].src_ts,pPayload->sps.spInfo[i].dst_ts);
+		}
+		
+		DBG0(DBG_IKE, IPSEC_FLAG "local_nat_flag:%hu", pPayload->local_nat_flag);
+		
 		DBG0(DBG_IKE, IPSEC_FLAG "send sa and keys to duapp");
-		msgqueue_send(MODULE_DU_APP0, pQueueMsg, MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
+		msgqueue_send(MODULE_DU_APP0, pQueueMsg, QUEUE_MSG_HDR_LEN + MAX_IPSEC_IKE_ADD_UPDATE_REQ_SIZE);
 
 		QUEUE_MSG_FREE(pQueueMsg);
 	}
